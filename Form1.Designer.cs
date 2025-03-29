@@ -81,34 +81,26 @@
             instrStack.AutoScroll = true;
             instrStack.AutoSize = true;
             instrStack.BackColor = SystemColors.Control;
+            instrStack.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
             instrStack.ColumnCount = 1;
             instrStack.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            instrStack.Location = new Point(527, 0);
+            instrStack.ForeColor = SystemColors.ControlText;
+            instrStack.Location = new Point(482, 0);
             instrStack.Margin = new Padding(10, 0, 0, 0);
             instrStack.MinimumSize = new Size(500, 500);
             instrStack.Name = "instrStack";
-            instrStack.RowCount = 20;
-            instrStack.RowStyles.Add(new RowStyle());
-            instrStack.RowStyles.Add(new RowStyle());
-            instrStack.RowStyles.Add(new RowStyle());
-            instrStack.RowStyles.Add(new RowStyle());
-            instrStack.RowStyles.Add(new RowStyle());
-            instrStack.RowStyles.Add(new RowStyle());
-            instrStack.RowStyles.Add(new RowStyle());
-            instrStack.RowStyles.Add(new RowStyle());
-            instrStack.RowStyles.Add(new RowStyle());
-            instrStack.RowStyles.Add(new RowStyle());
-            instrStack.RowStyles.Add(new RowStyle());
-            instrStack.RowStyles.Add(new RowStyle());
-            instrStack.RowStyles.Add(new RowStyle());
-            instrStack.RowStyles.Add(new RowStyle());
-            instrStack.RowStyles.Add(new RowStyle());
-            instrStack.RowStyles.Add(new RowStyle());
-            instrStack.RowStyles.Add(new RowStyle());
-            instrStack.RowStyles.Add(new RowStyle());
-            instrStack.RowStyles.Add(new RowStyle());
-            instrStack.RowStyles.Add(new RowStyle());
-            instrStack.Size = new Size(822, 708);
+            instrStack.RowCount = 10;
+            instrStack.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
+            instrStack.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
+            instrStack.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
+            instrStack.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
+            instrStack.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
+            instrStack.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
+            instrStack.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
+            instrStack.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
+            instrStack.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
+            instrStack.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
+            instrStack.Size = new Size(867, 708);
             instrStack.TabIndex = 1;
             instrStack.DragDrop += instrStack_DragDrop;
             instrStack.DragEnter += instrStack_DragEnter;
@@ -254,11 +246,13 @@
             // 
             // panel1
             // 
-            panel1.Dock = DockStyle.Fill;
-            panel1.Location = new Point(0, 0);
+            panel1.BorderStyle = BorderStyle.FixedSingle;
+            panel1.Dock = DockStyle.Bottom;
+            panel1.Location = new Point(0, 217);
             panel1.Name = "panel1";
-            panel1.Size = new Size(483, 708);
+            panel1.Size = new Size(483, 491);
             panel1.TabIndex = 1;
+            panel1.Paint += panel1_Paint;
             // 
             // panel2
             // 

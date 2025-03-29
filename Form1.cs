@@ -31,7 +31,7 @@ namespace WinFormsApp1
 
             // 创建一个 Label 显示拖放的数据
             Label lbl = new Label();
-            lbl.Text = droppedData; 
+            lbl.Text = droppedData;
             lbl.Font = new Font("Arial", 16, FontStyle.Regular);
             lbl.BorderStyle = BorderStyle.FixedSingle;
             lbl.AutoSize = true;
@@ -82,7 +82,7 @@ namespace WinFormsApp1
             panel1.BringToFront();
             Refresh();
             MaskedTextBox mtb = new myMaskedTextBox();
-            Point location = panel4.PointToClient(panel1.PointToScreen(new Point(100,100)));
+            Point location = panel4.PointToClient(panel1.PointToScreen(new Point(100, 100)));
             mtb.Location = location;
             mtb.Text = "test";
             mtb.AllowDrop = true;
@@ -93,16 +93,16 @@ namespace WinFormsApp1
             mtb.BringToFront();
 
             mtb.Font = new Font("Arial", 12, FontStyle.Regular);
-            
+
         }
 
         private void splitContainer1_Panel1_Paint_1(object sender, PaintEventArgs e)
         {
 
         }
-        private void text_MouseDown(object sender,MouseEventArgs e)
+        private void text_MouseDown(object sender, MouseEventArgs e)
         {
-            myMaskedTextBox mtb=sender as myMaskedTextBox;
+            myMaskedTextBox mtb = sender as myMaskedTextBox;
             if (e.Button == MouseButtons.Left)
             {
                 mtb.DoDragDrop(mtb.Text.ToString(), DragDropEffects.Move);
@@ -127,6 +127,11 @@ namespace WinFormsApp1
             {
                 mtb.data.isDragging = false;
             }
+        }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }
