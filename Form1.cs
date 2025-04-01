@@ -10,126 +10,133 @@ namespace WinFormsApp1
             InitializeComponent();
         }
 
-        private void menuStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
-        {
-
-        }
-
-        private void 文件ToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-        }
-
 
         private void instrStack_DragDrop(object sender, DragEventArgs e)
         {
-            // 从拖放数据中获取字符串
-            string droppedData = e.Data.GetData(DataFormats.StringFormat).ToString();
+            Control ctr;
+            TableLayoutPanel panel = sender as TableLayoutPanel;
+            if ((ctr = e.Data.GetData(typeof(myMaskedTextBox)) as Control) != null)
+            {
+                myMaskedTextBox mtb = ctr as myMaskedTextBox;
+                if (mtb.MaskCompleted == false)
+                {
+                    MessageBox.Show("请填写完整");
+                    return;
+                }
+                
 
-            // 将鼠标屏幕坐标转换为 Panel 内的坐标
-            Point dropPoint = instrStack.PointToClient(new Point(e.X, e.Y));
+                // 创建一个 Label 显示拖放的数据
+                Label lbl = new Label();
+                lbl.Width = 300;
+                lbl.Text = mtb.Text;
+                lbl.Height = 50;
+                lbl.Font = new Font("Arial", 16, FontStyle.Regular);
+                lbl.BorderStyle = BorderStyle.FixedSingle;
+                // 将 Label 添加到 Panel 上
+                panel.Controls.Add(lbl);
+            }
+            else if ((ctr = e.Data.GetData(typeof(TitledPanel)) as Control) != null)
+            {
+                TitledPanel tp = ctr as TitledPanel;
+                tp.Width = 400;
+                panel.Controls.Add(tp);
+                panel.SetRowSpan(tp,4);
 
-            // 创建一个 Label 显示拖放的数据
-            Label lbl = new Label();
-            lbl.Text = droppedData;
-            lbl.Font = new Font("Arial", 16, FontStyle.Regular);
-            lbl.BorderStyle = BorderStyle.FixedSingle;
-            lbl.AutoSize = true;
-            var data = instrStack.Tag as tableData;
-            // 将 Label 添加到 Panel 上
-            instrStack.Controls.Add(lbl);
+
+            }
         }
 
 
         private void instrStack_DragEnter(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.StringFormat))
-            {
-                e.Effect = DragDropEffects.Move;
-            }
+
+            e.Effect = DragDropEffects.Move;
+
 
         }
 
 
 
-        private void contextMenuStrip8_Opening(object sender, System.ComponentModel.CancelEventArgs e)
-        {
 
-        }
-
-        private void splitContainer1_Panel1_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
 
         private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
         {
 
         }
 
-        private void maskedTextBox1_MaskInputRejected(object sender, MaskInputRejectedEventArgs e)
-        {
-
-        }
 
         private void button2_Click(object sender, EventArgs e)
         {
-
+            Button btn = sender as Button;
+            Create_Panel(sender, e,btn.Text);
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            panel1.BringToFront();
-            Refresh();
+            Button btn = sender as Button;
+            Create_Mtb(sender, e,btn.Text);
+
+        }
+        private void Create_Mtb(object sender, EventArgs e,string text)
+        {
+            text = text.Replace('_', '0');
             MaskedTextBox mtb = new myMaskedTextBox();
             Point location = panel4.PointToClient(panel1.PointToScreen(new Point(100, 100)));
             mtb.Location = location;
-            mtb.Text = "test";
-            mtb.AllowDrop = true;
-            mtb.MouseDown += new MouseEventHandler(text_MouseDown);
-            mtb.MouseMove += new MouseEventHandler(text_MouseMove);
-            mtb.MouseUp += new MouseEventHandler(text_MouseUp);
+            mtb.Mask = text;
+            mtb.Width = 200;
+            Mysub_Drag(mtb);
+            mtb.Font = new Font("Arial", 12, FontStyle.Regular);
             panel4.Controls.Add(mtb);
             mtb.BringToFront();
 
-            mtb.Font = new Font("Arial", 12, FontStyle.Regular);
+
+
+        }
+        private void Create_Panel(object sender, EventArgs e, string text)
+        {
+            
+            TitledPanel tp = new TitledPanel();
+            Point location = panel4.PointToClient(panel1.PointToScreen(new Point(100, 100)));
+            tp.Location = location;
+
+            tp.Title = text;
+            tp.AllowDrop = true;
+            tp.Size = new System.Drawing.Size(200, 200);
+            tp.GrowStyle = TableLayoutPanelGrowStyle.AddRows;
+            tp.Padding = new Padding(0, (int)tp.TitleHeight, 0, 0);
+            tp.ColumnCount = 1;
+            tp.RowCount = 3;
+            tp.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
+            tp.DragEnter += instrStack_DragEnter;
+            tp.DragDrop += instrStack_DragDrop;
+            Mysub_Drag(tp);
+            int x = tp.RowStyles.Count;
+            for (int i = 0; i < tp.RowCount; i++)
+            {
+                tp.RowStyles.Add(new RowStyle(SizeType.Absolute, 50));
+            }
+
+
+            tp.Font = new Font("Arial", 12, FontStyle.Regular);
+            panel4.Controls.Add(tp);
+            tp.BringToFront();
 
         }
 
-        private void splitContainer1_Panel1_Paint_1(object sender, PaintEventArgs e)
-        {
 
-        }
-        private void text_MouseDown(object sender, MouseEventArgs e)
-        {
-            myMaskedTextBox mtb = sender as myMaskedTextBox;
-            if (e.Button == MouseButtons.Left)
-            {
-                mtb.DoDragDrop(mtb.Text.ToString(), DragDropEffects.Move);
-            }
-        }
-        private void text_MouseMove(object sender, MouseEventArgs e)
-        {
-            myMaskedTextBox mtb = sender as myMaskedTextBox;
-            if (mtb.data.isDragging)
-            {
-                // 计算新的位置，确保保持鼠标与控件的相对位置
-                Point newLocation = mtb.Location;
-                newLocation.X += e.X - mtb.data.location.X;
-                newLocation.Y += e.Y - mtb.data.location.Y;
-                mtb.Location = newLocation;
-            }
-        }
-        private void text_MouseUp(object sender, MouseEventArgs e)
-        {
-            myMaskedTextBox mtb = sender as myMaskedTextBox;
-            if (e.Button == MouseButtons.Left)
-            {
-                mtb.data.isDragging = false;
-            }
-        }
 
         private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void instrStack_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void button9_Click(object sender, EventArgs e)
         {
 
         }

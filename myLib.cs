@@ -8,45 +8,33 @@ using System.Threading.Tasks;
 
 namespace WinFormsApp1
 {
-    public class ctrData
-    {
-        public Point location {  get; set; }
-        public bool isDragging { get; set; } = false;
-
-    }
-    //用于纪录tablepanel的信息
-   public class tableData:ctrData{
-        public tableData(int col=0, int row = 0):base()
-        {
-            this.col = col;
-            this.row = row;
-        }
-
-        public int col { set; get; }
-        public int row { set; get; }
-
-    }
-    //用于创造控件的按钮数据
-    public class creBtnData : ctrData
-    {
-        //描述控件类型
-        enum ctrType
-        {
-            MaskedTextBook
-        }
-        public string data {  set; get; }
-    }
+ 
     static class MySet
     {
        static public void myConfigure(Form1 mainForm)
         {
-                  
-            
+            mainForm.Load+=mainForm.FormInit;
+
         }
-       static public void setTag(System.Windows.Forms.Control ctr,ctrData data)
+        static public Point My_Pos(Point p,Control ctrl,Form window)
         {
-            ctr.Tag = data; 
+            
+            Point screenPoint = ctrl.PointToScreen(p);
+            
+            Point formPoint = window.PointToClient(screenPoint);
+            
+            return formPoint;
         }
+        static public Rectangle Myctr_Pos(Control ctrl, Form window)
+        {
+            // 将控件左上角的点转换为屏幕坐标
+            Point screenPoint = ctrl.PointToScreen(Point.Empty);
+            // 再将屏幕坐标转换为窗体客户区坐标
+            Point formPoint = window.PointToClient(screenPoint);
+            // 返回以转换后的坐标为左上角，控件的尺寸为大小的矩形
+            return new Rectangle(formPoint, ctrl.Size);
+        }
+        
     }
     
 }
