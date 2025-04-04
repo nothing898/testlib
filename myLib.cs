@@ -5,17 +5,16 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
-
+using static System.Net.Mime.MediaTypeNames;
+using System.Windows.Forms;
+using WinFormsApp1;
 namespace WinFormsApp1
 {
  
     static class MySet
     {
-       static public void myConfigure(Form1 mainForm)
-        {
-            mainForm.Load+=mainForm.FormInit;
+        static public mainForm form;
 
-        }
         static public Point My_Pos(Point p,Control ctrl,Form window)
         {
             
@@ -34,7 +33,19 @@ namespace WinFormsApp1
             // 返回以转换后的坐标为左上角，控件的尺寸为大小的矩形
             return new Rectangle(formPoint, ctrl.Size);
         }
-        
+
+
+
+        static public List<Control> Get_Childs(Control ctr)
+        {
+            List<Control>list=new List<Control>();
+            foreach (Control c in ctr.Controls)
+            {
+                    list.Add(c);
+            }
+            return list;
+        }
+
     }
     
 }

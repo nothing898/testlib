@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ConstrainedExecution;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 namespace WinFormsApp1
 {
-    public partial class Form1
+    public partial class mainForm
     {
+        
         private void Block_Click(object sender, EventArgs e)
         {
             Button btn = sender as Button;
@@ -18,96 +20,121 @@ namespace WinFormsApp1
         {
             Button btn = sender as Button;
             string tag = btn.Name;
-            if (btn.Text == "变量文本框") {
-                Create_Mtb("",tag);
+            if (btn.Text == "变量赋值") {
+                Create_Sib("_ = _");
             }
-            else { Create_Mtb( btn.Text,tag); }
+            else { Create_Sib( btn.Text); }
 
         }
-        private void Create_Mtb( string text,string tag)
+        private void Create_Sib( string text)
         {
 
-            text = text.Replace('_', '0');
-            text = text.Replace("a","\\a");
-            MaskedTextBox mtb = new myMaskedTextBox();
-            Point location = this.PointToClient(panel1.PointToScreen(new Point(100, 100)));
-            mtb.Location = location;
-            mtb.Tag = tag;
-            mtb.Mask = text;
-            mtb.Width = 300;
-            mtb.ContextMenuStrip = contextMenuStrip1;
-            Mysub_Drag(mtb);
-            mtb.Font = new Font("Arial", 12, FontStyle.Regular);
-            this.Controls.Add(mtb);
-            mtb.BringToFront();
-            mtb.TextMaskFormat = MaskFormat.ExcludePromptAndLiterals;
+            
+            SegmentedInputBox sib=new SegmentedInputBox(text);
+            Point location = this.PointToClient(DragPanel.PointToScreen(new Point(100, 100)));
+            sib.Location = location;
+            sib.Tag = text;
+            sib.ContextMenuStrip = contextMenuStrip1;
+            sib.Name = text + SegmentedInputBox.Num++.ToString();
+            
+            
+            Mysub_Drag(sib);
+
+            
+            this.Controls.Add(sib);
+            sib.BringToFront();
 
 
 
         }
         private void Create_Panel( string text)
         {
-
-            TitledPanel tp = new TitledPanel();
-            Point location = this.PointToClient(panel1.PointToScreen(new Point(100, 100)));
+            if (text != "程序入口")
+            {
+                text += "_";
+            }
+            TitledPanel tp = new TitledPanel(text);
+            Point location = this.PointToClient(DragPanel.PointToScreen(new Point(100, 100)));
             tp.Location = location;
             tp.ContextMenuStrip = contextMenuStrip1;
-            tp.Title = text;
-            tp.AllowDrop = true;
-            tp.Size = new System.Drawing.Size(200, 100);
-            tp.GrowStyle = TableLayoutPanelGrowStyle.AddRows;
-            tp.Padding = new Padding(0, (int)tp.TitleHeight, 0, 0);
-            tp.ColumnCount = 1;
-            tp.RowCount = 1;
-            tp.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
-            tp.DragEnter += instrStack_DragEnter;
-            tp.DragDrop += instrStack_DragDrop;
-            Mysub_Drag(tp);
-            int x = tp.RowStyles.Count;
-            for (int i = 0; i < tp.RowCount; i++)
+            tp.Name = text + TitledPanel.Num++.ToString();
+            if (text== "程序入口")
             {
-                tp.RowStyles.Add(new RowStyle(SizeType.Absolute, 50));
+                this.enter = tp;
             }
 
-
-            tp.Font = new Font("Arial", 12, FontStyle.Regular);
+            Mysub_Drag(tp);
             this.Controls.Add(tp);
+            this.tps.Add(tp);
             tp.BringToFront();
 
         }
-        public void getDragable(object sender, EventArgs e)
-        {
-            Dragable = MySet.Myctr_Pos(panel1, this);
-        }
 
-        private void Mysub_Drag(System.Windows.Forms.Control myctr)
+        private void My_TO_Drag(Control myctr) {
+            
+        }
+        private void Mysub_Drag(Control myctr)
         {
             myctr.MouseDown += new MouseEventHandler(Myctr_MouseDown);
             myctr.MouseMove += new MouseEventHandler(Myctr_MouseMove);
             myctr.MouseUp += new MouseEventHandler(Myctr_MouseUp);
+            if (myctr.Controls.Count != 0) {
+                foreach (Control ctr in myctr.Controls)
+                {
+                    Mysub_Drag(ctr);
+                }
+            }
         }
         private void Myctr_MouseDown(object sender, MouseEventArgs e)
         {
-            if (sender != null)
+            if (e.Button == MouseButtons.Left)
             {
-                IMyControl ic = sender as IMyControl;
-                if (e.Button == MouseButtons.Left)
+                Dragable = DragPanel.Get_Pos();
+                Control ctr = sender as Control;
+                if (ctr.Parent is SegmentedInputBox && !(ctr is myTextBox) || (ctr.Parent is TitledPanel && (ctr.Parent as TitledPanel).GetRow(ctr) == 0))
                 {
-                    ic.data.isDragging = true;
+                    Myctr_MouseDown((sender as Control).Parent, e);
+                }
+                else
+                {
+                    if (ctr is myTextBox)
+                    {
+                        return;
+                    }
+                    if (ctr.Parent is TitledPanel)
+                    {
+                        TitledPanel tp = ctr.Parent as TitledPanel;
+                        if (tp.GetRow(ctr) != 0)
+                        {
+                            tp.Remove(ctr);
+                            this.Controls.Add(ctr);
+                            ctr.BringToFront();
+                        }
+                    }
+                    IMyControl ic = sender as IMyControl;
+                    ic.data.isDragging = true;//记录轨迹
                     ic.data.location = e.Location;
+
                 }
             }
         }
         private void Myctr_MouseMove(object sender, MouseEventArgs e)
         {
-
-            if (sender != null)
+            Control ctr = sender as Control;
+            if (ctr.Parent is SegmentedInputBox && !(ctr is myTextBox) || (ctr.Parent is TitledPanel && (ctr.Parent as TitledPanel).GetRow(ctr) == 0))
             {
+                Myctr_MouseMove((sender as Control).Parent, e);
+            }
+            else if (sender != null)
+            {
+                if (ctr is myTextBox)
+                {
+                    return;
+                }
                 IMyControl ic = sender as IMyControl;
-                System.Windows.Forms.Control ctr = sender as System.Windows.Forms.Control;
                 if (ic.data.isDragging)
                 {
-                    
+
                     // 计算希望移动到的新位置（基于当前控件位置和鼠标移动的差值）
                     int desiredX = ctr.Location.X + (e.X - ic.data.location.X);
                     int desiredY = ctr.Location.Y + (e.Y - ic.data.location.Y);
@@ -117,120 +144,63 @@ namespace WinFormsApp1
                     int clampedX = Math.Max(Dragable.Left, Math.Min(desiredX, Dragable.Right - ctr.Width));
                     int clampedY = Math.Max(Dragable.Top, Math.Min(desiredY, Dragable.Bottom - ctr.Height));
 
-                   
+
                     ctr.Location = new Point(clampedX, clampedY);
 
                     Point p = new Point(e.X, e.Y);
                     p = MySet.My_Pos(p, ctr, this);
-                    if (p.X>=Dragable.Right)
+                    if (p.X >= Dragable.Right)
                     {
-                        ctr.DoDragDrop(ctr, DragDropEffects.Move);
-                        ic.data.isDragging=false;
+
                     }
                 }
             }
         }
         private void Myctr_MouseUp(object sender, MouseEventArgs e)
         {
-            if (sender != null)
+            Control ctr = sender as Control;
+            if (e.Button == MouseButtons.Left)
             {
-                IMyControl ic = sender as IMyControl;
-                if (e.Button == MouseButtons.Left)
+                if (ctr.Parent is SegmentedInputBox && !(ctr is myTextBox) || (ctr.Parent is TitledPanel && (ctr.Parent as TitledPanel).GetRow(ctr) == 0))
                 {
-                    ic.data.isDragging = false;
+                    Myctr_MouseUp((sender as Control).Parent, e);
                 }
-            }
-        }
-        private void instrStack_DragDrop(object sender, DragEventArgs e)
-        {
-            Control ctr;
-            TableLayoutPanel panel = sender as TableLayoutPanel;
-            if ((ctr = e.Data.GetData(typeof(myMaskedTextBox)) as Control) != null)
-            {
-                myMaskedTextBox mtb = ctr as myMaskedTextBox;
-                if (mtb.MaskCompleted == false)
+                else if (sender != null)
                 {
-                    MessageBox.Show("请填写完整");
-                    return;
-                }
 
-
-                
-                
-                mtb.Width = 670;
-                mtb.Text = mtb.Text;
-                mtb.Height = 50;
-                mtb.Font = new Font("Arial", 16, FontStyle.Regular);
-                mtb.BorderStyle = BorderStyle.FixedSingle;
-                mtb.ContextMenuStrip = contextMenuStrip1;
-                // 将 Label 添加到 Panel 上
-                panel.Controls.Add(mtb);
-                panel.RowCount += 1;
-                panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 50));
-                panel.Height += 50;
-                
-                Control parent=panel.Parent as TableLayoutPanel;
-                TableLayoutPanel kid = panel;
-                while((parent is TitledPanel)||(parent is TableLayoutPanel))
-                {
-                    TableLayoutPanel par=parent as TableLayoutPanel;
-                    par.RowCount += 1;
-                    par.RowStyles.Add(new RowStyle(SizeType.Absolute, 50));
-                    par.Height += 50;
-                    par.SetRowSpan(kid, kid.RowCount+1);
-                    kid = par;
-                    if (!(parent.Parent is TitledPanel) && !(parent.Parent is TableLayoutPanel)) break;
-                    parent=parent.Parent;                    
-                }
-            }
-            else if ((ctr = e.Data.GetData(typeof(TitledPanel)) as Control) != null)
-            {
-                TitledPanel tp = ctr as TitledPanel;
-                tp.Width = 600;
-                tp.ContextMenuStrip = contextMenuStrip1;
-                tp.Anchor= AnchorStyles.Left;
-                panel.Controls.Add(tp);
-                panel.RowCount += 2;            
-                for (int i = 0; i < 4; i++)
-                {
-                    panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 50));
-                }
-                panel.Height += 100;
-                if(panel is TitledPanel)panel.Width += 5;
-                panel.SetRowSpan(tp, 2);
-                Control parent = panel.Parent as TableLayoutPanel;
-                TableLayoutPanel kid = panel;
-                while ((parent is TitledPanel) || (parent is TableLayoutPanel))
-                {
-                    TableLayoutPanel par = parent as TableLayoutPanel;
-                    par.RowCount += 2;
-                    for (int i = 0; i < 4; i++)
+                    if (ctr is myTextBox)
                     {
-                        par.RowStyles.Add(new RowStyle(SizeType.Absolute, 50));
+                        return;
                     }
-                    par.Height += 100;
-                    par.SetRowSpan(kid, kid.RowCount + 1);
+                    Point screenPoint = ctr.PointToScreen(new Point(e.X, e.Y));
+                    TitledPanel tmp = null;
+                    int index = -1;
+                    foreach (TitledPanel tp in tps)
+                    {
+                        Point clientPoint = tp.PointToClient(screenPoint);
+                        // 如果释放点在 TitledPanel 的客户区内
+                        if (tp.ClientRectangle.Contains(clientPoint) && tp != ctr && !tp.Get_Fathers().Contains(ctr))
+                        {
+                            if (index == -1 || tp.Get_Fathers().Contains(tmp))
+                            {
+                                index = tp.Point_Row(clientPoint);
+                                tmp = tp;
+                            }
+                        }
+                    }
+                    if (index != -1)
+                    {
+                        tmp.Add(ctr, index);
+                    }
 
-                    if ((par is TitledPanel)){
-                        par.Width += 5;
-                    }
-                    kid = par;
-                    if (!(parent.Parent is TitledPanel) && !(parent.Parent is TableLayoutPanel)) break;
-                    parent = parent.Parent;
+                    IMyControl ic = sender as IMyControl;
+                    ic.data.isDragging = false;
+
+
                 }
-
-
             }
         }
-
-
-        private void instrStack_DragEnter(object sender, DragEventArgs e)
-        {
-
-            e.Effect = DragDropEffects.Move;
-
-
-        }
+        
 
 
     }

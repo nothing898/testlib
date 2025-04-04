@@ -1,23 +1,26 @@
 ﻿
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows.Forms;
 
 namespace WinFormsApp1
 {
-    public partial class Form1 : Form
+    public partial class mainForm : Form
     {
-        public Form1()
+        public mainForm()
         {
             InitializeComponent();
         }
 
+        public TitledPanel enter;
 
+        public List<TitledPanel> tps=new List<TitledPanel>();
         //设定可拖拽区
-        Rectangle Dragable;
-        public void FormInit(object sender, EventArgs e)
+        public Rectangle Dragable;
+        public void GetDragable(object sender, EventArgs e)
         {
-            Dragable = MySet.Myctr_Pos(panel1, this);
-            this.Resize += new System.EventHandler(getDragable);
+            Dragable = DragPanel.Get_Pos();
+
         }
 
 
@@ -52,7 +55,14 @@ namespace WinFormsApp1
                 ToolStripMenuItem item = sender as ToolStripMenuItem;
                 ContextMenuStrip cms = item.Owner as ContextMenuStrip;
                 Control clickedControl = cms.SourceControl;
-                clickedControl.Parent.Controls.Remove(clickedControl);
+                if ((clickedControl.Parent is TitledPanel))
+                {
+                    (clickedControl.Parent as TitledPanel).Remove(clickedControl);
+                }
+                else
+                {
+                    clickedControl.Parent.Controls.Remove(clickedControl);
+                }
             }
         }
 
@@ -63,13 +73,13 @@ namespace WinFormsApp1
                 ToolStripMenuItem item = sender as ToolStripMenuItem;
                 ContextMenuStrip cms = item.Owner as ContextMenuStrip;
                 Control clickedControl = cms.SourceControl;
-                if (clickedControl is myMaskedTextBox)
+                if (clickedControl is SegmentedInputBox)
                 {
-                    Create_Mtb(clickedControl.Text, (string)clickedControl.Tag);
+                    Create_Sib(clickedControl.Text);
                 }
                 else if (clickedControl is TitledPanel)
                 {
-                    Create_Panel((clickedControl as TitledPanel).Title);
+                    Create_Panel((clickedControl as TitledPanel).text);
                 }
 
             }
@@ -85,71 +95,75 @@ namespace WinFormsApp1
             if (e.Button == MouseButtons.Left)
             {
                 File.WriteAllText("./out.txt", "");
-                Get_Child(instrStack);
+                int x=0;
+                if(this.enter!=null)Get_Child(this.enter);
+
 
 
 
             }
         }
-        private void Get_Child(TableLayoutPanel con)
+        private void Get_Child(TitledPanel con)
         {
             foreach (Control ctrl in con.Controls)
             {
-                if (ctrl is myMaskedTextBox)
+                if (ctrl is SegmentedInputBox)
                 {
-                    myMaskedTextBox mtb = ctrl as myMaskedTextBox;
-
-                    string info = mtb.Text;
+                    SegmentedInputBox sib = ctrl as SegmentedInputBox;
+                    string info = "";
+                    foreach (var box in sib.Boxes)
+                    {
+                        info += " " + box.Text;
+                    }
                     switch (ctrl.Tag)
                     {
-                        case "button1":
+                        case "向前直走_cm":
                             info = "goline " + info;
                             break;
-                        case "button2":
+                        case "原地旋转_°":
                             info = "turn " + info;
                             break;
-                        case "button3":
-                            info = "cirle " + info.Insert(3, " ");
+                        case "以左侧_cm为圆心旋转_°":
+                            info = "cirle " + info;
                             break;
-                        case "button10":
+                        case "中断":
                             info = "break";
                             break;
-                        case "button6":
-                            break;
-                        case "button4":
+                        case "重复":
                             info = "for " + info;
                             break;
-
+                        case "令_为_":
+                            info = "let " + info;
+                            break;
                     }
 
 
-                    File.AppendAllText("./out.txt", info + "\n");
+                    if(ctrl.Tag!=null)File.AppendAllText("./out.txt", info  + "\n");
                 }
                 else if (ctrl is TitledPanel)
                 {
                     string info = "";
                     TitledPanel tp = ctrl as TitledPanel;
-                    switch (tp.Title)
+                    switch (tp.sib.Separators[0].Text)
                     {
-                        case "代码块":
-                            File.AppendAllText("./out.txt", "{\n");
-                            Get_Child(ctrl as TableLayoutPanel);
+
+                        case "如果":
+                            info = "if " + tp.sib.Boxes[0].Text + " {\n";
+                            File.AppendAllText("./out.txt", info);
+                            Get_Child(ctrl as TitledPanel);
                             File.AppendAllText("./out.txt", "}\n");
                             break;
-                        case "如果":
-                            File.AppendAllText("./out.txt", "if(\n");
-                            Get_Child(ctrl as TableLayoutPanel);
-                            File.AppendAllText("./out.txt", ")\n");
-                            break;
                         case "直到":
-                            File.AppendAllText("./out.txt", "while(\n");
-                            Get_Child(ctrl as TableLayoutPanel);
-                            File.AppendAllText("./out.txt", ")\n");
+                            info = "while " + tp.sib.Boxes[0].Text + " {\n";
+                            File.AppendAllText("./out.txt", info);
+                            Get_Child(ctrl as TitledPanel);
+                            File.AppendAllText("./out.txt", "}\n");
                             break;
-                        case "elif":
+
+                        case "否则,若":
                             File.AppendAllText("./out.txt", "elif(\n");
-                            Get_Child(ctrl as TableLayoutPanel);
-                            File.AppendAllText("./out.txt", ")\n");
+                            Get_Child(ctrl as TitledPanel);
+                            File.AppendAllText("./out.txt","}\n");
                             break;
 
                     }
@@ -160,6 +174,11 @@ namespace WinFormsApp1
 
             }
 
+
+        }
+
+        private void titledPanel1_Paint(object sender, PaintEventArgs e)
+        {
 
         }
 

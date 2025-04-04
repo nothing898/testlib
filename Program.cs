@@ -12,8 +12,14 @@ namespace WinFormsApp1
             // see https://aka.ms/applicationconfiguration.
             
             ApplicationConfiguration.Initialize();
-            var mainForm=new Form1 ();
-            MySet.myConfigure(mainForm);
+            mainForm mainForm = new mainForm();
+			myCtrLib.mainForm = mainForm;
+			
+			mainForm.Resize += new System.EventHandler(mainForm.GetDragable);
+
+			MySet.form = mainForm;
+            Event events = new Event();
+            events.mainForm = mainForm;
             Application.Run(mainForm);
         }
     }

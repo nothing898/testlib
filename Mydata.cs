@@ -35,4 +35,6 @@ namespace WinFormsApp1
         }
         public string data { set; get; }
     }
+    
+
 }
