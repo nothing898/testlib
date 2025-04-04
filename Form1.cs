@@ -1,4 +1,5 @@
-
+Ôªø
+using System.ComponentModel;
 using System.Windows.Forms;
 
 namespace WinFormsApp1
@@ -11,51 +12,13 @@ namespace WinFormsApp1
         }
 
 
-        private void instrStack_DragDrop(object sender, DragEventArgs e)
+        //ËÆæÂÆöÂèØÊãñÊãΩÂå∫
+        Rectangle Dragable;
+        public void FormInit(object sender, EventArgs e)
         {
-            Control ctr;
-            TableLayoutPanel panel = sender as TableLayoutPanel;
-            if ((ctr = e.Data.GetData(typeof(myMaskedTextBox)) as Control) != null)
-            {
-                myMaskedTextBox mtb = ctr as myMaskedTextBox;
-                if (mtb.MaskCompleted == false)
-                {
-                    MessageBox.Show("«ÎÃÓ–¥ÕÍ’˚");
-                    return;
-                }
-                
-
-                // ¥¥Ω®“ª∏ˆ Label œ‘ æÕœ∑≈µƒ ˝æ›
-                Label lbl = new Label();
-                lbl.Width = 300;
-                lbl.Text = mtb.Text;
-                lbl.Height = 50;
-                lbl.Font = new Font("Arial", 16, FontStyle.Regular);
-                lbl.BorderStyle = BorderStyle.FixedSingle;
-                // Ω´ Label ÃÌº”µΩ Panel …œ
-                panel.Controls.Add(lbl);
-            }
-            else if ((ctr = e.Data.GetData(typeof(TitledPanel)) as Control) != null)
-            {
-                TitledPanel tp = ctr as TitledPanel;
-                tp.Width = 400;
-                panel.Controls.Add(tp);
-                panel.SetRowSpan(tp,4);
-
-
-            }
+            Dragable = MySet.Myctr_Pos(panel1, this);
+            this.Resize += new System.EventHandler(getDragable);
         }
-
-
-        private void instrStack_DragEnter(object sender, DragEventArgs e)
-        {
-
-            e.Effect = DragDropEffects.Move;
-
-
-        }
-
-
 
 
 
@@ -64,65 +27,6 @@ namespace WinFormsApp1
 
         }
 
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            Button btn = sender as Button;
-            Create_Panel(sender, e,btn.Text);
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            Button btn = sender as Button;
-            Create_Mtb(sender, e,btn.Text);
-
-        }
-        private void Create_Mtb(object sender, EventArgs e,string text)
-        {
-            text = text.Replace('_', '0');
-            MaskedTextBox mtb = new myMaskedTextBox();
-            Point location = panel4.PointToClient(panel1.PointToScreen(new Point(100, 100)));
-            mtb.Location = location;
-            mtb.Mask = text;
-            mtb.Width = 200;
-            Mysub_Drag(mtb);
-            mtb.Font = new Font("Arial", 12, FontStyle.Regular);
-            panel4.Controls.Add(mtb);
-            mtb.BringToFront();
-
-
-
-        }
-        private void Create_Panel(object sender, EventArgs e, string text)
-        {
-            
-            TitledPanel tp = new TitledPanel();
-            Point location = panel4.PointToClient(panel1.PointToScreen(new Point(100, 100)));
-            tp.Location = location;
-
-            tp.Title = text;
-            tp.AllowDrop = true;
-            tp.Size = new System.Drawing.Size(200, 200);
-            tp.GrowStyle = TableLayoutPanelGrowStyle.AddRows;
-            tp.Padding = new Padding(0, (int)tp.TitleHeight, 0, 0);
-            tp.ColumnCount = 1;
-            tp.RowCount = 3;
-            tp.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
-            tp.DragEnter += instrStack_DragEnter;
-            tp.DragDrop += instrStack_DragDrop;
-            Mysub_Drag(tp);
-            int x = tp.RowStyles.Count;
-            for (int i = 0; i < tp.RowCount; i++)
-            {
-                tp.RowStyles.Add(new RowStyle(SizeType.Absolute, 50));
-            }
-
-
-            tp.Font = new Font("Arial", 12, FontStyle.Regular);
-            panel4.Controls.Add(tp);
-            tp.BringToFront();
-
-        }
 
 
 
@@ -136,9 +40,129 @@ namespace WinFormsApp1
 
         }
 
-        private void button9_Click(object sender, EventArgs e)
+        private void contextMenuStrip1_Click(object sender, EventArgs e)
         {
 
         }
+
+        private void Âà†Èô§ToolStripMenuItem_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                ToolStripMenuItem item = sender as ToolStripMenuItem;
+                ContextMenuStrip cms = item.Owner as ContextMenuStrip;
+                Control clickedControl = cms.SourceControl;
+                clickedControl.Parent.Controls.Remove(clickedControl);
+            }
+        }
+
+        private void Â§çÂà∂ToolStripMenuItem_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                ToolStripMenuItem item = sender as ToolStripMenuItem;
+                ContextMenuStrip cms = item.Owner as ContextMenuStrip;
+                Control clickedControl = cms.SourceControl;
+                if (clickedControl is myMaskedTextBox)
+                {
+                    Create_Mtb(clickedControl.Text, (string)clickedControl.Tag);
+                }
+                else if (clickedControl is TitledPanel)
+                {
+                    Create_Panel((clickedControl as TitledPanel).Title);
+                }
+
+            }
+        }
+
+        private void menuStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+
+        }
+
+        private void ÂØºÂá∫Êñá‰ª∂ToolStripMenuItem_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                File.WriteAllText("./out.txt", "");
+                Get_Child(instrStack);
+
+
+
+            }
+        }
+        private void Get_Child(TableLayoutPanel con)
+        {
+            foreach (Control ctrl in con.Controls)
+            {
+                if (ctrl is myMaskedTextBox)
+                {
+                    myMaskedTextBox mtb = ctrl as myMaskedTextBox;
+
+                    string info = mtb.Text;
+                    switch (ctrl.Tag)
+                    {
+                        case "button1":
+                            info = "goline " + info;
+                            break;
+                        case "button2":
+                            info = "turn " + info;
+                            break;
+                        case "button3":
+                            info = "cirle " + info.Insert(3, " ");
+                            break;
+                        case "button10":
+                            info = "break";
+                            break;
+                        case "button6":
+                            break;
+                        case "button4":
+                            info = "for " + info;
+                            break;
+
+                    }
+
+
+                    File.AppendAllText("./out.txt", info + "\n");
+                }
+                else if (ctrl is TitledPanel)
+                {
+                    string info = "";
+                    TitledPanel tp = ctrl as TitledPanel;
+                    switch (tp.Title)
+                    {
+                        case "‰ª£Á†ÅÂùó":
+                            File.AppendAllText("./out.txt", "{\n");
+                            Get_Child(ctrl as TableLayoutPanel);
+                            File.AppendAllText("./out.txt", "}\n");
+                            break;
+                        case "Â¶ÇÊûú":
+                            File.AppendAllText("./out.txt", "if(\n");
+                            Get_Child(ctrl as TableLayoutPanel);
+                            File.AppendAllText("./out.txt", ")\n");
+                            break;
+                        case "Áõ¥Âà∞":
+                            File.AppendAllText("./out.txt", "while(\n");
+                            Get_Child(ctrl as TableLayoutPanel);
+                            File.AppendAllText("./out.txt", ")\n");
+                            break;
+                        case "elif":
+                            File.AppendAllText("./out.txt", "elif(\n");
+                            Get_Child(ctrl as TableLayoutPanel);
+                            File.AppendAllText("./out.txt", ")\n");
+                            break;
+
+                    }
+
+                }
+
+
+
+            }
+
+
+        }
+
+
     }
 }
