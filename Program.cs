@@ -17,9 +17,6 @@ namespace WinFormsApp1
 			
 			mainForm.Resize += new System.EventHandler(mainForm.GetDragable);
 
-			MySet.form = mainForm;
-            Event events = new Event();
-            events.mainForm = mainForm;
             Application.Run(mainForm);
         }
     }

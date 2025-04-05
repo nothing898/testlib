@@ -148,7 +148,7 @@ namespace WinFormsApp1
                     ctr.Location = new Point(clampedX, clampedY);
 
                     Point p = new Point(e.X, e.Y);
-                    p = MySet.My_Pos(p, ctr, this);
+                    p = p.Get_Pos(ctr, this);
                     if (p.X >= Dragable.Right)
                     {
 

@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -200,9 +201,10 @@ namespace WinFormsApp1
             base.OnPaint(e);
 
             Pen pen = new Pen(Color.Gray, BorderWidth);
+            
+            Rectangle rect = new Rectangle(0, 0, this.ClientSize.Width - BorderWidth, this.ClientSize.Height - BorderWidth);
 
-
-            e.Graphics.DrawRectangle(pen, 0, 0, this.ClientSize.Width - BorderWidth, this.ClientSize.Height - BorderWidth);
+            e.Graphics.DrawRectangle(pen, rect);
         }
     }
     public class SegmentedInputBox : UserControl,IMyControl
@@ -222,9 +224,16 @@ namespace WinFormsApp1
 
             using (Pen pen = new Pen(Color.Gray, 1))
             {
-                Rectangle rect = new Rectangle(0, 0, this.Width-1, this.Height-1);
-                e.Graphics.DrawRectangle(pen, rect);
+                using (SolidBrush brush = new SolidBrush(Setting.BoxColor))
+                {
+
+                    Rectangle rect = new Rectangle(0, 0, this.Width - 1, this.Height - 1);
+                    e.Graphics.DrawRectangle(pen, rect);
+                    // 填充矩形区域
+                    e.Graphics.FillRectangle(brush, rect);
+                }
             }
+
         }
 
         public SegmentedInputBox(string text)
@@ -255,10 +264,12 @@ namespace WinFormsApp1
                 {
                     Boxes[i] = new myTextBox()
                     {
+                        BackColor = Setting.BoxColor,
                         Font = font,
                         Size = new Size(boxWidth, Setting.RegularHeith - margin.Top - margin.Bottom),
                         Location = new Point(locations[i], margin.Top),
-                        TextAlign = HorizontalAlignment.Center
+                        TextAlign = HorizontalAlignment.Center,
+                        BorderStyle = BorderStyle.None
 
                     };
 
@@ -267,6 +278,8 @@ namespace WinFormsApp1
 
                 Separators[i] = new myLabel()
                 {
+                    BackColor = Setting.BoxColor,
+                    FlatStyle = FlatStyle.Flat,
                     Font = font,
                     Text = infos[i],
                     AutoSize = true,

@@ -33,5 +33,13 @@ namespace WinFormsApp1
 
             return (ctr.Parent as TitledPanel).GetRow(ctr);
         }
+        public static Point Get_Pos(this Point p, Control ctrl, Form window) {
+            Point screenPoint = ctrl.PointToScreen(p);
+
+            Point formPoint = window.PointToClient(screenPoint);
+
+            return formPoint;
+        }
+
     }
 }

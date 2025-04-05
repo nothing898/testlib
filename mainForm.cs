@@ -2,7 +2,9 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Forms;
-
+using System;
+using System.Drawing;
+using System.Windows.Forms;
 namespace WinFormsApp1
 {
     public partial class mainForm : Form
@@ -12,39 +14,25 @@ namespace WinFormsApp1
             InitializeComponent();
         }
 
+
+        // 用于记录恢复前的窗体大小和位置
+        private Rectangle normalBounds;
+        private bool isMaximized = false;
+
+
+        // 用于拖动窗口
+        private bool dragging = false;
+        private Point dragStartPoint;
+
+
         public TitledPanel enter;
 
-        public List<TitledPanel> tps=new List<TitledPanel>();
+        public List<TitledPanel> tps = new List<TitledPanel>();
         //设定可拖拽区
         public Rectangle Dragable;
         public void GetDragable(object sender, EventArgs e)
         {
             Dragable = DragPanel.Get_Pos();
-
-        }
-
-
-
-        private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-
-
-
-        private void panel1_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void instrStack_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void contextMenuStrip1_Click(object sender, EventArgs e)
-        {
 
         }
 
@@ -54,8 +42,8 @@ namespace WinFormsApp1
             {
                 ToolStripMenuItem item = sender as ToolStripMenuItem;
                 ContextMenuStrip cms = item.Owner as ContextMenuStrip;
-                Control clickedControl = cms.SourceControl;
-                if ((clickedControl.Parent is TitledPanel))
+                Control clickedControl = cms.SourceControl;//获取右键的对象啊
+                if ((clickedControl.Parent is TitledPanel))   //删除控件
                 {
                     (clickedControl.Parent as TitledPanel).Remove(clickedControl);
                 }
@@ -95,8 +83,8 @@ namespace WinFormsApp1
             if (e.Button == MouseButtons.Left)
             {
                 File.WriteAllText("./out.txt", "");
-                int x=0;
-                if(this.enter!=null)Get_Child(this.enter);
+                int x = 0;
+                if (this.enter != null) Get_Child(this.enter);
 
 
 
@@ -138,7 +126,7 @@ namespace WinFormsApp1
                     }
 
 
-                    if(ctrl.Tag!=null)File.AppendAllText("./out.txt", info  + "\n");
+                    if (ctrl.Tag != null) File.AppendAllText("./out.txt", info + "\n");
                 }
                 else if (ctrl is TitledPanel)
                 {
@@ -163,7 +151,7 @@ namespace WinFormsApp1
                         case "否则,若":
                             File.AppendAllText("./out.txt", "elif(\n");
                             Get_Child(ctrl as TitledPanel);
-                            File.AppendAllText("./out.txt","}\n");
+                            File.AppendAllText("./out.txt", "}\n");
                             break;
 
                     }
@@ -177,11 +165,76 @@ namespace WinFormsApp1
 
         }
 
-        private void titledPanel1_Paint(object sender, PaintEventArgs e)
+
+        private void Close_Win(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void 文件ToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
         }
 
+        private void btnMaximize_Click(object sender, EventArgs e)
+        {
+            if (!isMaximized)
+            {
+                normalBounds = this.Bounds; // 保存当前窗口位置和大小
+                this.Bounds = Screen.FromControl(this).WorkingArea;
+                isMaximized = true;
+                btnMaximize.Text = "❐"; // 表示还原
+            }
+            else
+            {
+                this.Bounds = normalBounds;
+                isMaximized = false;
+                btnMaximize.Text = "□";
+            }
+        }
 
+        private void btnMinimize_Click(object sender, EventArgs e)
+        {
+            this.WindowState = FormWindowState.Minimized;
+        }
+
+        // 实现拖动逻辑
+        private void TitlePanel_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                dragging = true;
+                // 使用屏幕坐标记录拖动起点
+                dragStartPoint = TitlePanel.PointToScreen(e.Location);
+            }
+        }
+
+        private void TitlePanel_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (dragging)
+            {
+                Point currentScreenPos = TitlePanel.PointToScreen(e.Location);
+                int offsetX = currentScreenPos.X - dragStartPoint.X;
+                int offsetY = currentScreenPos.Y - dragStartPoint.Y;
+                this.Location = new Point(this.Location.X + offsetX, this.Location.Y + offsetY);
+                dragStartPoint = currentScreenPos; // 更新起点
+            }
+        }
+        private void CustomForm_Resize(object sender, EventArgs e)
+        {
+            int btnWidth = btnClose.Width;
+            btnClose.Location = new Point(TitlePanel.Width - btnWidth, 0);
+            btnMinimize.Location = new Point(TitlePanel.Width - 2 * btnWidth, 0);
+            btnMaximize.Location = new Point(TitlePanel.Width - 3 * btnWidth, 0);
+        }
+        private void TitlePanel_MouseUp(object sender, MouseEventArgs e)
+        {
+            dragging = false;
+        }
+
+        private void 设置ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
